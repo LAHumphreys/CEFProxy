@@ -1,0 +1,27 @@
+sudo: false
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+    packages:
+      - cmake
+      - cmake-data
+      - g++-7
+      - libboost1.55-all-dev
+      - valgrind
+      - libssl-dev
+
+
+before_install:
+  - git clone https://github.com/Grauniad/CMakeUtils.git
+  - export CXX="g++-7"
+  - export CC="gcc-7"
+  - g++-7 --version
+
+install:
+  - ./buildDeps.sh
+
+script:
+  - ./buildFromDeps.sh
