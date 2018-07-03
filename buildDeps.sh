@@ -22,5 +22,6 @@ fi
 declare -A depList
 
 depList[CEFBaseApp]=https://github.com/Grauniad/CEFBaseApp.git
+depList[CPPWebSocketResponseRequest]=https://github.com/Grauniad/CPPWebSocketResponseRequest.git
 
 source $DEPS_ROOT/CMakeUtils/build_tools/buildDepsCommon.sh || exit 1
