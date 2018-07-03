@@ -75,12 +75,14 @@ SET_CEF_TARGET_OUT_DIR()
 
 target_link_libraries(proxy
         CEFProxyLib
+        CEFBaseApp::CEFBaseAppUtils
+        CEFBaseApp::CEFBaseAppCore
         CEFBaseApp::CEFBaseAppDefaults
         GTKUtils::GTKUtil
-        ${CEF_LIB_RELEASE}
-        ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
-        ${CEF_STANDARD_LIBS}
         CPPWebSocketResponseRequest::CPPWebSocketResponseRequest
+        ${CEF_LIB_RELEASE}
+        ${CEF_STANDARD_LIBS}
+        ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
 )
 
 target_include_directories(proxy
