@@ -83,6 +83,11 @@ target_link_libraries(proxy
         CPPWebSocketResponseRequest::CPPWebSocketResponseRequest
 )
 
+target_include_directories(proxy
+    PRIVATE
+        ${CEF_INCLUDE_PATH}
+)
+
 #TODO: Now this links we've done a lot of the hard work. We still need to do
 #      the file copy etc to allow the binary to run + the above todo around
 #       makin it easier for client libraries to link...
