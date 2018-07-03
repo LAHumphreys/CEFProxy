@@ -35,23 +35,26 @@ add_library(CEFProxyLib STATIC
     ProxyLib/SubOnResourceLoaded.cpp
 )
 
-target_link_libraries(CEFProxyLib PUBLIC
-    FixedJSON::FixedJSON
-    ThreadComms::ThreadComms
-    DevToolsLog::Log
-    OSDevTools::OSDevTools
-    Boost::system
-    Boost::thread
-    Boost::boost
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    CEFBaseApp::CEFBaseAppUtils
-    CEFBaseApp::CEFBaseAppCore
+target_link_libraries(CEFProxyLib
+        FixedJSON::FixedJSON
+        ThreadComms::ThreadComms
+        DevToolsLog::Log
+        OSDevTools::OSDevTools
+        Boost::system
+        Boost::thread
+        Boost::boost
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        CEFBaseApp::CEFBaseAppUtils
+        CEFBaseApp::CEFBaseAppCore
 )
 
-target_include_directories(CEFProxyLib PUBLIC
-    $<BUILD_INTERFACE:${CEFProxy_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(CEFProxyLib
+    PUBLIC
+        $<BUILD_INTERFACE:${CEFProxy_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CEF_INCLUDE_PATH}
 )
 
 set_property(TARGET CEFProxyLib PROPERTY PUBLIC_HEADER
