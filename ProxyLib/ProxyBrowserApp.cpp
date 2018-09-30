@@ -33,6 +33,8 @@ void ProxyBrowserHandler::OnContextInitialized() {
 
 	std::string url = GetStartUrl();
 
+	std::cout << "Initialising application!" << std::endl;
+
 	// Create the first browser window.
     browser_ = CefBrowserHost::CreateBrowserSync(
         window_info,

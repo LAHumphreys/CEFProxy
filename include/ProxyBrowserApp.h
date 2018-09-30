@@ -49,7 +49,7 @@ public:
 	 *       This must NOT be invoked on the UI thread before the browser has
 	 *       been created (as that would result in a deadlock)
 	 */
-	CefRefPtr<CefBrowser> GetBrowserSync();
+	virtual CefRefPtr<CefBrowser> GetBrowserSync();
 
 	/**
 	 * D'tor - nothing to do (but see reference counting...)

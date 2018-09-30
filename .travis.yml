@@ -12,6 +12,7 @@ addons:
       - libboost1.55-all-dev
       - valgrind
       - libssl-dev
+      - xvfb
 
 
 before_install:
@@ -25,3 +26,5 @@ install:
 
 script:
   - ./buildFromDeps.sh
+  - cd Build
+  - xvfb-run make test
