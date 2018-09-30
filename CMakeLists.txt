@@ -33,7 +33,7 @@ add_library(CEFProxyLib STATIC
     ProxyLib/ReqNavigate.cpp
     ProxyLib/ReqResource.cpp
     ProxyLib/SubOnResourceLoaded.cpp
-)
+        include/ReqCookieJar.h ProxyLib/ReqCookieJar.cpp)
 
 target_link_libraries(CEFProxyLib
         FixedJSON::FixedJSON
@@ -70,6 +70,39 @@ set_property(TARGET CEFProxyLib PROPERTY PUBLIC_HEADER
 add_executable(proxy proxy/proxy.cpp)
 #TODO: This config need cleaning up - see how much we can drag back into the BaseApp project
 
+#
+# Test Configuration
+#
+find_package(GTest REQUIRED)
+
+add_executable(cookie test/cookie.cpp)
+COPY_FILES(cookie "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
+COPY_FILES(cookie "${CEF_RESOURCE_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
+
+enable_testing()
+add_test(cookie cookie)
+
+target_link_libraries(cookie
+    PUBLIC
+    CEFProxyLib
+    CPPWebSocketResponseRequest::CPPWebSocketResponseRequest
+    CEFBaseApp::CefTestApp
+    ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
+    ${CEF_LIB_RELEASE}
+    ${CEF_STANDARD_LIBS}
+    GTest::GTest
+)
+
+target_include_directories(cookie
+    PUBLIC
+    $<BUILD_INTERFACE:${CEFBaseApp_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
+    ${CEF_INCLUDE_PATH}
+)
+
+
+
 # Determine the target output directory.
 SET_CEF_TARGET_OUT_DIR()
 
@@ -80,9 +113,9 @@ target_link_libraries(proxy
         CEFBaseApp::CEFBaseAppDefaults
         GTKUtils::GTKUtil
         CPPWebSocketResponseRequest::CPPWebSocketResponseRequest
+        ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
         ${CEF_LIB_RELEASE}
         ${CEF_STANDARD_LIBS}
-        ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
 )
 
 target_include_directories(proxy

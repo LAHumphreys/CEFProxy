@@ -12,6 +12,7 @@
 
 #include "CefBaseApp.h"
 #include "ReqResource.h"
+#include <ReqCookieJar.h>
 #include "SubOnResourceLoaded.h"
 
 namespace {
@@ -47,6 +48,7 @@ ProxyRESTEndPoint::ProxyRESTEndPoint(
     endpoint_.AddHandler("REQ_NAVIGATE", std::make_unique<ReqNavigate>(*browser));
     endpoint_.AddHandler("REQ_GET", std::make_unique<ReqGET>(endpoint_, *browser));
     endpoint_.AddHandler("SUB_LOADS", std::make_unique<SubOnResourceLoaded>(app, endpoint_));
+    endpoint_.AddHandler("REQ_COOKIE_JAR", std::make_unique<ReqCookieJar> (app->GetClient(), endpoint_));
 
 
     app->GetClient()->LifeSpanHandler().InstallHandler(
