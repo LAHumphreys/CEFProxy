@@ -7,6 +7,7 @@
 
 #include <SimpleJSON.h>
 #include <io_thread.h>
+#include <OSTools.h>
 
 
 class EnableFileCookies: public CefBrowserProcessHandler {
@@ -50,10 +51,12 @@ public:
 
 constexpr const char* reqServerURL = "ws://localhost:12345";
 
+const std::string rootPath = OS::Dirname(OS::GetExe());
+const std::string initUrl = "file://" + rootPath + "/index.html";
 
 int main (int argc, char** argv) {
-    std::cout << argv[0] << std::endl;
-    CefRefPtr<DummyCefApp> testApp(new DummyCefApp(argc, argv));
+    CefRefPtr<DummyCefApp> testApp(new DummyCefApp(argc, argv, initUrl));
+
     app = testApp.get();
 
     auto browser = std::make_shared<TestProxyBrowserApp>(*testApp);
@@ -114,7 +117,7 @@ TEST_F(CookieTest, GetCookie) {
     )JS";
     ExecuteCleanJS(code, "username=Test.User");
 
-    req.Get<url>() = "file:///home/lhumphreys/index.html";
+    req.Get<url>() = initUrl;
     auto response =
         requestThread.Request(reqServerURL, "REQ_COOKIE_JAR", req.GetJSONString());
 
@@ -151,7 +154,7 @@ TEST_F(CookieTest, NoCookies) {
     )JS";
     ExecuteCleanJS(code, "");
 
-    req.Get<url>() = "file:///home/lhumphreys/index.html";
+    req.Get<url>() = initUrl;
     auto response =
             requestThread.Request(reqServerURL, "REQ_COOKIE_JAR", req.GetJSONString());
 

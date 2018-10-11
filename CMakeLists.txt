@@ -78,6 +78,7 @@ find_package(GTest REQUIRED)
 add_executable(cookie test/cookie.cpp)
 COPY_FILES(cookie "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
 COPY_FILES(cookie "${CEF_RESOURCE_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
+COPY_FILES(cookie "index.html" ${CEFProxy_SOURCE_DIR}/test  ${CEFProxy_BINARY_DIR})
 
 enable_testing()
 add_test(cookie cookie)
