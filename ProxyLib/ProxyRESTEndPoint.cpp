@@ -30,8 +30,13 @@ namespace {
          *
          * [This "works" for us since we will never create a second browser]
          */
-        virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) {
-            endPoint_.RunInNewThread();
+        void OnAfterCreated(CefRefPtr<CefBrowser> browser) override {
+            std::thread([=] () -> void {
+                endPoint_.Run();
+                CefBaseThread::PostToCEFThread(TID_UI, [=] () -> void {
+                    CefQuitMessageLoop();
+                });
+            }).detach();
         }
     private:
         ProxyRESTEndPoint& endPoint_;
