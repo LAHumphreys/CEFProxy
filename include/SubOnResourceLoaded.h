@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "CefBaseApp.h"
+#include <OpenConnections.h>
 /*
  * REQUEST (empty):
  *    {
@@ -35,13 +36,13 @@ public:
      *    @param serverThread   Updates must be pushed on the server's thread
      */
     SubOnResourceLoaded(CefRefPtr<CefBaseApp> app, IPostable& serverThread);
-    virtual ~SubOnResourceLoaded();
+    virtual ~SubOnResourceLoaded() = default;
 
     virtual void OnRequest(RequestHandle hdl) override;
 
-    void NotifyClients(std::string url, int code, std::string source);
+    void NotifyClients(std::string update);
 private:
-    std::vector<RequestHandle> activeSessions_;
+    OpenConnectionsList activeSessions_;
     IPostable& serverThread_;
 };
 

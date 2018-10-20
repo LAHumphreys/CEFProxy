@@ -91,7 +91,6 @@ public:
         static constexpr int FAILED_TO_PARSE = -1;
         int status;
         std::string url;
-        std::string source;
     };
 
     /**
@@ -108,16 +107,15 @@ private:
      */
     void OnMessage(const std::string& msg) override {
         // We need a JSON parser to extract the values
-        NewStringField(source);
         NewStringField(url);
         NewIntField(status);
-        using Response = SimpleParsedJSON<source, url, status>;
+        using Response = SimpleParsedJSON<url, status>;
 
         // This method will only ever be called from the subclient thread
         static Response foundParser;
         foundParser.Clear();
 
-        LoadedPage page{-1, "", ""};
+        LoadedPage page{-1, ""};
         std::string error;
         if (foundParser.Parse(msg.c_str(), error)) {
             page.status = foundParser.Get<status>();
