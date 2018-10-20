@@ -78,10 +78,16 @@ find_package(GTest REQUIRED)
 add_executable(cookie test/cookie.cpp)
 COPY_FILES(cookie "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
 COPY_FILES(cookie "${CEF_RESOURCE_FILES}" "${CEF_BINARY_DIR_RELEASE}" ${CEFProxy_BINARY_DIR})
-COPY_FILES(cookie "index.html" ${CEFProxy_SOURCE_DIR}/test  ${CEFProxy_BINARY_DIR})
+COPY_FILES(cookie "index.html" ${CEFProxy_SOURCE_DIR}/test ${CEFProxy_BINARY_DIR})
+
+add_executable(navigate test/loaded.cpp)
+COPY_FILES(navigate "redirect.html" ${CEFProxy_SOURCE_DIR}/test ${CEFProxy_BINARY_DIR})
+COPY_FILES(navigate "dummy.html" ${CEFProxy_SOURCE_DIR}/test
+        ${CEFProxy_BINARY_DIR})
 
 enable_testing()
 add_test(cookie cookie)
+add_test(navigate navigate)
 
 target_link_libraries(cookie
     PUBLIC
@@ -101,6 +107,27 @@ target_include_directories(cookie
     PRIVATE
     ${CEF_INCLUDE_PATH}
 )
+
+target_link_libraries(navigate
+        PUBLIC
+        CEFProxyLib
+        CPPWebSocketResponseRequest::CPPWebSocketResponseRequest
+        CEFBaseApp::CefTestApp
+        ${CEF_BINARY_DIR_RELEASE}/libcef_dll_wrapper.a
+        ${CEF_LIB_RELEASE}
+        ${CEF_STANDARD_LIBS}
+        GTest::GTest
+        )
+
+
+target_include_directories(navigate
+        PUBLIC
+        $<BUILD_INTERFACE:${CEFBaseApp_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        PRIVATE
+        ${CEF_INCLUDE_PATH}
+        )
+
 
 
 
