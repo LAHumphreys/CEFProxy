@@ -210,6 +210,26 @@ public:
 
     }
 
+    std::vector<std::string> WaitForPage(const std::string url) {
+        std::vector<std::string> pages;
+
+        LoadPublisher::LoadedPage page;
+
+        while (page.url != url) {
+            LoadedPages().WaitForMessage(page);
+            pages.push_back(page.url);
+
+        }
+
+        // Flush TID_RENDERER
+        CefBaseThread::GetResultFromCEFThread<bool>(TID_RENDERER, [] () -> bool {
+            return true;
+        });
+
+        return pages;
+
+    }
+
     /***********************************************************
      *  Test Setup / Tear down
      ***********************************************************/
@@ -273,13 +293,12 @@ TEST_F(NavigateTest, LoadHtmlRedirect) {
 
     RequestNavigate(redirect_url);
 
-    // Initially we should get the direct page
-    std::string page_url = WaitForPageLoad();
-    ASSERT_EQ(page_url, redirect_url);
+    auto pages = WaitForPage(index_url);
 
-    // And then the page we're bounced to...
-    page_url = WaitForPageLoad();
-    ASSERT_EQ(page_url, index_url);
+    ASSERT_EQ(pages.size(), 2);
+
+    ASSERT_EQ(pages[0], redirect_url);
+    ASSERT_EQ(pages[1], index_url);
 }
 
 TEST_F(NavigateTest, JSLinkRedirect) {
