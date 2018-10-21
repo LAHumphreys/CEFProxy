@@ -179,19 +179,47 @@ public:
     }
 
     /**
-     * Access to the ring-buffer containing the set of loaded pages
+     * Wait until the next change in page URL occurrs, and then return the new url
      *
-     * @return The ring-buffer
+     * NOTE: If there is already an unchecked earlier page load in the ring buffer, then this
+     *       will be returned instead.
+     *
+     * Event Loop Syncing
+     * -------------------
+     *    When we recieve this update, we know that the browser process has prcoessed
+     *    the update (since it published it to us). By flushing the renderer event
+     *    loop we can be sure that it has finished processing updates as well.
+     *
+     *    On the renderer process this event is quite violent - the old context (which
+     *    we started the test suite with) has been destroyed and a new one has been
+     *    created. It is therefore important that TID_RENDERER has gotten around to
+     *    processing the callback in the TestBaseApp to refresh the current context
+     *    object stored in the TestApp.
+     *
+     * @return  The next url
      */
-    PipeSubscriber<LoadPublisher::LoadedPage>& LoadedPages() {
-        return *messageClient;
+    std::string WaitForPageLoad() {
+        LoadPublisher::LoadedPage page;
+        LoadedPages().WaitForMessage(page);
+
+        // Flush TID_RENDERER
+        CefBaseThread::GetResultFromCEFThread<bool>(TID_RENDERER, [] () -> bool {
+            return true;
+        });
+        return page.url;
+
     }
 
     /***********************************************************
      *  Test Setup / Tear down
      ***********************************************************/
 
+
     void SetUp() override {
+        CefBaseThread::GetResultFromCEFThread<bool>(TID_RENDERER, [] () -> bool {
+            return true;
+        });
+
         messageClient = loadClient.NewClient();
         clientThread.PostTask([&] () -> void {
             loadClient.Start();
@@ -201,10 +229,9 @@ public:
 
         auto url = BuildURL("dummy.html");
         RequestNavigate(url);
-        LoadPublisher::LoadedPage page;
-
-        while (page.url != url) {
-            LoadedPages().WaitForMessage(page);
+        std::string current;
+        while (current != url) {
+            current = WaitForPageLoad();
         }
     }
 
@@ -216,6 +243,15 @@ public:
     }
 
 private:
+    /**
+     * Access to the ring-buffer containing the set of loaded pages
+     *
+     * @return The ring-buffer
+     */
+    PipeSubscriber<LoadPublisher::LoadedPage>& LoadedPages() {
+        return *messageClient;
+    }
+
     IOThread requestThread;
 
     WorkerThread     clientThread;
@@ -227,10 +263,8 @@ TEST_F(NavigateTest, LoadSimplePage) {
     std::string url = BuildURL("dummy.html");
     RequestNavigate(url);
 
-    LoadPublisher::LoadedPage page;
-
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, url);
+    std::string page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, url);
 }
 
 TEST_F(NavigateTest, LoadHtmlRedirect) {
@@ -239,15 +273,13 @@ TEST_F(NavigateTest, LoadHtmlRedirect) {
 
     RequestNavigate(redirect_url);
 
-    LoadPublisher::LoadedPage page;
-
     // Initially we should get the direct page
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, redirect_url);
+    std::string page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, redirect_url);
 
     // And then the page we're bounced to...
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, index_url);
+    page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, index_url);
 }
 
 TEST_F(NavigateTest, JSLinkRedirect) {
@@ -256,19 +288,17 @@ TEST_F(NavigateTest, JSLinkRedirect) {
 
     RequestNavigate(jsUrl);
 
-    LoadPublisher::LoadedPage page;
-
     // Initially we should get the direct page
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, jsUrl);
+    std::string page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, jsUrl);
 
     ASSERT_NO_FATAL_FAILURE(
         ExecuteCleanJS(R"JS( window.location.href = "index.html")JS", "index" ".html")
     );
 
     // Now wait for the redirect to happen...
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, indexUrl);
+    page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, indexUrl);
 }
 
 TEST_F(NavigateTest, JSHttpRedirect) {
@@ -277,17 +307,15 @@ TEST_F(NavigateTest, JSHttpRedirect) {
 
     RequestNavigate(jsUrl);
 
-    LoadPublisher::LoadedPage page;
-
     // Initially we should get the direct page
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, jsUrl);
+    std::string page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, jsUrl);
 
     ASSERT_NO_FATAL_FAILURE(
         ExecuteCleanJS(R"JS( window.location.replace("index.html"))JS", "")
     );
 
     // Now wait for the redirect to happen...
-    LoadedPages().WaitForMessage(page);
-    ASSERT_EQ(page.url, indexUrl);
+    page_url = WaitForPageLoad();
+    ASSERT_EQ(page_url, indexUrl);
 }
