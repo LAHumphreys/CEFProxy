@@ -27,4 +27,4 @@ install:
 script:
   - ./buildFromDeps.sh
   - cd Build
-  - xvfb-run make test
+  - xvfb-run ctest --verbose
