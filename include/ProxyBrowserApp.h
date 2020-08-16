@@ -72,7 +72,7 @@ private:
 	std::shared_future<CefRefPtr<CefBrowser>> browserFuture_;
 
 	// Include the default reference counting implementation.
-    IMPLEMENT_REFCOUNTING(ProxyBrowserHandler)
+    IMPLEMENT_REFCOUNTING(ProxyBrowserHandler);
 };
 
 #endif /* GCGVBROWSERAPP_H_ */

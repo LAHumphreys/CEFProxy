@@ -14,10 +14,10 @@ class EnableFileCookies: public CefBrowserProcessHandler {
 public:
     void OnContextInitialized() {
         // For tests we are using file URLs, and wish to support cookie access...
-        CefCookieManager::GetGlobalManager(nullptr)->SetSupportedSchemes({"file"}, nullptr);
+        CefCookieManager::GetGlobalManager(nullptr)->SetSupportedSchemes({"file"}, false, nullptr);
     }
 
-    IMPLEMENT_REFCOUNTING(EnableFileCookies)
+    IMPLEMENT_REFCOUNTING(EnableFileCookies);
 };
 CefBaseApp* app;
 

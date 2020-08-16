@@ -41,6 +41,7 @@ void ProxyBrowserHandler::OnContextInitialized() {
         app.GetClient(),
         url,
         browser_settings,
+        NULL,
         NULL); // Use the global context - important as the URL requests will be doing the same...
 
     browserPromise_.set_value(browser_);
