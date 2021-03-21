@@ -62,7 +62,7 @@ std::string ProxyBrowserHandler::GetStartUrl() {
 	url = command_line->GetSwitchValue("url");
 
 	if (url.empty()) {
-		url = "http://www.bbc.co.uk";
+		url = "https://www.google.co.uk";
 	}
 
 	return url;

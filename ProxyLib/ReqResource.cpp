@@ -17,7 +17,14 @@ namespace
     NewStringField(postData);
     NewIntField(status);
     NewStringField(document);
-    typedef SimpleParsedJSON<url, postData> Request;
+    namespace header_fields {
+        NewStringField(name);
+        NewStringField(value);
+        using header = SimpleParsedJSON<name, value>;
+    }
+    using HeaderObject = header_fields::header;
+    NewObjectArray(headers, header_fields::header);
+    typedef SimpleParsedJSON<url, postData, headers> Request;
     typedef SimpleParsedJSON<status, document> Reply;
     Request request;
 
@@ -104,29 +111,45 @@ void ReqGET::OnRequest(RequestHandle hdl) {
     }
 
     auto id = store_.StoreRequest(hdl);
+    std::map<std::string, std::string> raw_headers;
+    for (auto& hp: request.Get<headers>()) {
+        HeaderObject& h = *hp;
+        raw_headers.insert({
+            h.Get<header_fields::name>(), h.Get<header_fields::value>()
+        });
+    }
+    std::string raw_url = request.Get<url>();
+    std::string raw_post_data = request.Get<postData>();
 
     // Must be on a valid CEF thread to fire the request
-    CefBaseThread::PostToCEFThread(TID_UI, [=] () -> void{
+    CefBaseThread::PostToCEFThread(TID_UI,
+    [this, id, raw_url, raw_post_data, raw_headers] () -> void{
         auto getRequest = CefRequest::Create();
-        getRequest->SetURL(request.Get<url>());
+        getRequest->SetURL(raw_url);
 
-        if (request.Supplied<postData>()) {
+        CefRequest::HeaderMap headerMap;
+        for (auto& hp: raw_headers) {
+            headerMap.insert({hp.first, hp.second});
+        }
+
+        if (!raw_post_data.empty()) {
             auto data = CefPostData::Create();
             auto element = CefPostDataElement::Create();
-            auto strData = request.Get<postData>();
+            auto strData = raw_post_data;
             element->SetToBytes(strData.length(), strData.c_str());
             data->AddElement(element);
             getRequest->SetMethod("POST");
             getRequest->SetPostData(data);
-            getRequest->SetHeaderMap({
-                { "Content-Type", "application/json"},
-                { "Accept", "application/json, text/javascript, */*; q=0.01" }
-            });
+            headerMap.insert({ "Content-Type", "application/json"});
+            headerMap.insert(
+                {"Accept", "application/json, text/javascript, */*; q=0.01" });
+            getRequest->SetHeaderMap(headerMap);
             // Grant it access to our cookies...
             getRequest->SetFlags(UR_FLAG_ALLOW_STORED_CREDENTIALS);
         } else {
             getRequest->SetFlags(UR_FLAG_ALLOW_STORED_CREDENTIALS);
             getRequest->SetMethod("GET");
+            getRequest->SetHeaderMap(headerMap);
         }
 
         CefRefPtr<URLRequestClient> client = new URLRequestClient(*this, id);
